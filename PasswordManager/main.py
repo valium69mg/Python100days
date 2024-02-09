@@ -4,35 +4,45 @@ autor: carlostr
 date: 24.01.2024
 """
 from tkinter import *
-import csv 
+import csv
 from tkinter import messagebox
 from password_generator import PasswordGenerator
 import pyperclip
+import json 
 
-#VARIABLES 
-password = None
-website = None
-username = None
-
+"""
 #READ CVS FILE WITH PASSWORDS
-try:
-    file = open('D:/My files/Python OOP/Python 100 DAYS/PasswordManager/password.cvs', 'r')
-except FileNotFoundError:
-    file = open('D:/My files/Python OOP/Python 100 DAYS/PasswordManager/password.cvs', 'w', newline='')
-    csv_reader = csv.DictReader(file)
-    data = [row for row in csv_reader]
-    file.close()
-else:
-    csv_reader = csv.DictReader(file)
-    data = [row for row in csv_reader]
-    file.close()
+jsonArray = []
+with open('Python 100 DAYS/PasswordManager/password.csv','r') as csvf:
+    cvsReader = csv.DictReader(csvf)
+
+    for row in cvsReader:
+        jsonArray.append(row)
+
+with open('Python 100 DAYS/PasswordManager/password.json','w') as jsonf:
+    jsonString = json.dumps(jsonArray,indent=3)
+    jsonf.write(jsonString)
+"""
 
 window = Tk()
 
-#Functions
+#Setup password gen
 pwo = PasswordGenerator()
 pwo.minlen = 12
 pwo.maxlen = 16
+
+#FUNCTIONS 
+
+def collectData():
+    try:
+        with open('Python 100 DAYS/PasswordManager/password.json', 'r') as openfile:
+            json_object = json.loads(openfile.read())
+    except FileNotFoundError:
+        json_file = open('Python 100 DAYS/PasswordManager/password.json','w')
+        json_file.close()
+        json_object = []
+    return json_object
+
 def genPassword():
     password = pwo.generate()
     set_text(password)
@@ -58,10 +68,7 @@ def getWebsite():
     return entry
 
 def savePassword():
-    global password
-    global username
-    global website
-    global data
+    data = collectData()
     username = getUsername()
     password = getPassword()
     website = getWebsite()
@@ -75,20 +82,16 @@ def savePassword():
         save = messagebox.askquestion(title="Save password?",message=f"Would you like to save this credentials? \n Username:{username} \n Website:{website} \n Password: {password}")
         if (save == 'yes'):
             data.append(dictionary)
-            with open('D:/My files/Python OOP/Python 100 DAYS/PasswordManager/password.cvs', 'w', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(['username', 'website','password'])
-                for dictionary in data:
-                    writer.writerow([dictionary['username'],dictionary['website'],dictionary['password']])
-                file.close()
+            outfile = open('Python 100 DAYS/PasswordManager/password.json','w')
+            json_object = json.dumps(data,indent=3)
+            outfile.write(json_object)
+            outfile.close()
             messagebox.showinfo(title="PASSWORD MANAGER", message="PASSWORD SAVED!\n username:{} \n website:{} \n password:{}".format(username,website,password))
         elif (save == 'no'):
             pass
 
 def searchPassword():
-    global username
-    global website
-    global data
+    data = collectData()
     username = getUsername()
     website = getWebsite()
     is_user_found = False
