@@ -8,11 +8,10 @@ from tkinter import messagebox
 load_dotenv()
 
 os.chdir("Python 100 DAYS/PasswordManager")
-print(os.getcwd())
 
 try:
     
-    key = os.getenv("ENCRYPTION_KE")
+    key = os.getenv("ENCRYPTION_KEY")
     encryptor = Fernet(key)
 except TypeError as err:
     info = messagebox.showinfo(title="ENCRYPTION KEY",message="Your encryption key was NOT succesfully loaded.")

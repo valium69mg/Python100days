@@ -11,6 +11,6 @@ def read_dotenv(dir):
                 pass
 
 def write_dotenv_encryption_key(dir,key,value):
-    with open(f"{dir}.env", "w") as f:
+    with open(f"{dir}\.env", "w") as f:
         f.write(f"{key}={value}")
         
