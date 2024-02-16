@@ -4,21 +4,21 @@ from cryptography.fernet import Fernet
 import pyperclip
 import json 
 from password_generator import PasswordGenerator
-
-
+import os
 
 class UI:
 
     def __init__(self,encryptor:Fernet):
         self.window = Tk()
         self.encryptor = encryptor
+        os.chdir("Python 100 DAYS/PasswordManager")
         #CONFIG TITLE AND SIZE
         self.window.title("Password Manager")
         self.window.minsize(width=200,height=300)
         self.window.config(padx=20,pady=20)
         #CREATE CANVAS FOR IMG
         self.canvas = Canvas(width=200,height=200,bg="#f7f5dd", highlightthickness=0)
-        self.lock_img = PhotoImage(file="D:/My files/Python OOP/Python 100 DAYS/PasswordManager/logo.png")
+        self.lock_img = PhotoImage(file="logo.png")
         self.canvas.create_image(100,100,image=self.lock_img)
         self.canvas.grid(row=2,column=2)
         #WEBSITE AND MAIL/USERNAME LABELS
@@ -48,11 +48,6 @@ class UI:
         self.pwo = PasswordGenerator()
         self.pwo.minlen = 12
         self.pwo.maxlen = 16
-
-        # USER SESSION 
-        self.user = "default"
-        self.user_folder = "default user" 
-        self.dir = "Python 100 DAYS/PasswordManager/users"
 
         self.window.mainloop()
 
@@ -103,7 +98,7 @@ class UI:
             if (save == 'yes'):
                 data.append(dictionary)
                 json_object = json.dumps(data,indent=3)
-                with open(f"{self.dir}/default user/default_passwords.json",'w') as outfile:
+                with open("users\default user\default_passwords.json",'w') as outfile:
                     outfile.write(json_object)
                 messagebox.showinfo(title="PASSWORD MANAGER", message="PASSWORD SAVED!\n username:{} \n website:{} \n password:{}".format(username,website,self.decipher(password)))
             elif (save == 'no'):
@@ -132,12 +127,12 @@ class UI:
     def collectData(self):
         
         try:
-            with open(f"{self.dir}/default user/default_passwords.json", 'r') as openfile:
+            with open("users\default user\default_passwords.json", 'r') as openfile:
                 json_object = json.loads(openfile.read())  
         except json.JSONDecodeError:
             json_object = []   
         except FileNotFoundError:
-            with open(f"{self.dir}/default user/default_passwords.json",'w') as openfile:
+            with open("users\default user\default_passwords.json",'w') as openfile:
                 json_object = []
         return json_object
     
