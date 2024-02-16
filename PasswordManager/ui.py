@@ -7,11 +7,14 @@ from password_generator import PasswordGenerator
 import os
 
 class UI:
-
+    """
+    HERE WE INITIALIZE THE MAIN WINDOW WITH ALL ITS ATTRIBUTES
+    (WIDTH, HEIGHT, LABELS, BUTTONS, ENTRIES, IMAGES, ETC)
+    """
     def __init__(self,encryptor:Fernet):
+        #INITIALIZE THE WINDOW
         self.window = Tk()
         self.encryptor = encryptor
-        
         #CONFIG TITLE AND SIZE
         self.window.title("Password Manager")
         self.window.minsize(width=200,height=300)
@@ -53,17 +56,27 @@ class UI:
         self.window.eval('tk::PlaceWindow . center')
         self.window.mainloop()
 
-
+    """
+    THIS FUNCTION GENERATES A RANDOM PASSWORD USING PWO LIBRARY
+    THE GENERATED PASSWORD IS BETWEEN 12 AND 16 CHARACTERS
+    """
     def genPassword(self):
         password = self.pwo.generate()
         self.set_text(password)
 
+    """
+    THIS SET TEXT FUNCTION CHANGES THE TEXT IN THE PASSWORD ENTRY
+    IT IS USED BY THE GEN PASSWORD FUNCTION FOR DISPLAYING THE RANDOMLY GENERATED
+    PASSWORD 
+    """
 
     def set_text(self,text):
         self.enter_password_entry.delete(0,END)
         self.enter_password_entry.insert(0,text)
         return
-
+    """
+    THESE FUNTIONS RETRIEVE THE DATA FROM THE ENTRIES AT THE MAIN WINDOW
+    """
     def getPassword(self):
         self.entry = self.enter_password_entry.get()
         self.entry.strip()
@@ -78,6 +91,10 @@ class UI:
         self.entry = self.website_entry.get()
         self.entry.strip()
         return self.entry
+    """
+    THE savePassword FUNCTION SAVES THE CREDENTIALS ENTERED ON A JSON FILE
+    THE PASSWORD CREDENTIAL IS CIPHERED THROUG AES ENCRYPTION
+    """
 
     def savePassword(self):
         data = self.collectData()
@@ -105,7 +122,14 @@ class UI:
                 messagebox.showinfo(title="PASSWORD MANAGER", message="PASSWORD SAVED!\n username:{} \n website:{} \n password:{}".format(username,website,self.decipher(password)))
             elif (save == 'no'):
                 pass
+        
+        """
+        THE searchPassword FUNCTION SEARCHES A PASSWORD BY THE USERNAME AND WEBSITE
+        IN THE JSON FILE
 
+        WHEN THE PASSWORD OF THE USER AND WEBSITE IS FOUND IT DECIPHERS IT USING THE
+        ENCRYPTION KEY IN .ENV FILE
+        """
     def searchPassword(self):
         data = self.collectData()
         username = self.getUsername()
@@ -126,6 +150,19 @@ class UI:
             messagebox.showinfo(title="Password",message="Your user was not found.")  
         is_user_found = False
     
+    """
+    THIS FUNCTION COLLECTS THE DATA FROM THE JSON FILE
+
+    IN CASE THAT THE JSON FILE DOES NOT EXIST IT CREATES AN EMPTY JSON FILE
+
+    ON THE OTHER HAND IF THE JSON FILE EXIST BUT IT IS EMPTY THE RETURN DATA IS 
+    AN EMPTY LIST []
+
+    FINALLY IF IT FOUNDS THE FILE AND THE FILE HAS ELEMENTS IT TRANSFORMS THE JSON
+    FILE INTO A LIST OF DICTIONARIES WE CAN WORK WITH
+    """
+
+    
     def collectData(self):
         
         try:
@@ -139,7 +176,11 @@ class UI:
         return json_object
     
     """
-    ENCRYPT AND DECRYPT
+    ENCRYPT AND DECRYPT FUNCTIONS
+
+    THIS FUNCTIONS USE THE FERNET CLASS MODULE
+    AND AN ENCRYPT KEY TO ENCRYPT AND DECRYPT PASSWORDS
+    FROM THE FILE 
     """
 
     def cipher(self,message: str):
