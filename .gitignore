@@ -1,5 +1,5 @@
 password.json
 password.csv
 default_passwords.json
-key.txt
 .env
+__pycache__/
