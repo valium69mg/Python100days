@@ -48,7 +48,7 @@ class UI:
         self.pwo = PasswordGenerator()
         self.pwo.minlen = 12
         self.pwo.maxlen = 16
-
+        self.window.attributes("-topmost",True)
         self.window.mainloop()
 
 
