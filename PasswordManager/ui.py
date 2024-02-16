@@ -11,7 +11,7 @@ class UI:
     def __init__(self,encryptor:Fernet):
         self.window = Tk()
         self.encryptor = encryptor
-        os.chdir("Python 100 DAYS/PasswordManager")
+        
         #CONFIG TITLE AND SIZE
         self.window.title("Password Manager")
         self.window.minsize(width=200,height=300)
