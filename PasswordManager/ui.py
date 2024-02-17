@@ -135,15 +135,21 @@ class UI:
         username = self.getUsername()
         website = self.getWebsite()
         is_user_found = False
+        decrypt_success = False
         for dict in data:
             if dict["username"] == username and dict["website"] == website:
                 is_user_found = True
                 password = dict["password"]
                 # DECRYPTION
-                password = self.decipher(password)
+                try:
+                    password = self.decipher(password)
+                except:
+                    messagebox.showerror("DECIPHER ERROR",message="THE ENCRYPTING KEY IS INVALID!")
+                else:
+                    decrypt_success = True
             else:
                 pass
-        if (is_user_found == True):
+        if (is_user_found == True and decrypt_success == True):
             messagebox.showinfo(title="Password",message=f"Your password is: {password} \n copied to clipboard!")   
             pyperclip.copy(password) 
         else:
