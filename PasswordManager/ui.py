@@ -289,7 +289,13 @@ class UI:
         data = self.collectData()
         list_of_credetials = []
         for dict in data:
-            credentials = dict["website"] + ", " + dict["username"] + ", " + self.decipher(dict["password"])
+            password_len = len(self.decipher(dict["password"]))
+            list_of_password_letters = [] # FOR STORING THE * SIGNS OF THE CENSORED DATA
+            for i in range(password_len):
+                list_of_password_letters.append("*")
+
+            censored_password = "".join(list_of_password_letters)   
+            credentials = dict["website"] + ", " + dict["username"] + ", " + censored_password
             list_of_credetials.append(credentials)
         list_of_credetials = self.quicksort(list_of_credetials)
         
@@ -333,10 +339,12 @@ class UI:
         """
         data = self.collectData()
         for dict in data:
-            if (item_to_copy.find(self.decipher(dict["password"])) != -1):
+            if (item_to_copy.find(dict["website"]) != -1 and item_to_copy.find(dict["username"]) != -1):
                 item_to_copy = self.decipher(dict["password"])
                 break 
         messagebox.showinfo(title="Password",message=f"Your password is: {item_to_copy} \n copied to clipboard!")  
         pyperclip.copy(item_to_copy)
+        # WE BRING AGAIN THE ALL PASSWORDS WINDOW TO THE FRONT 
+        self.newWindow.attributes('-topmost',1)
        
         
