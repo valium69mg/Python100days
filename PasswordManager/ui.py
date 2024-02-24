@@ -5,6 +5,7 @@ import pyperclip
 import json 
 from password_generator import PasswordGenerator
 import os
+from tkinter import ttk
 
 class UI:
     """
@@ -24,18 +25,29 @@ class UI:
         self.lock_img = PhotoImage(file="logo.png")
         self.canvas.create_image(100,100,image=self.lock_img)
         self.canvas.grid(row=2,column=2)
-        #WEBSITE AND MAIL/USERNAME LABELS
+        #WEBSITE AND MAIL/USERNAME LABELS   
         self.website_title_label = Label(self.window,text="Website: ")
         self.mail_title_label = Label(self.window,text="Email/Username: ")
-        self.website_entry = Entry(self.window)
-        self.mail_entry = Entry(self.window)
+        # THE CODE BELOW EXTRACTS WEBSITE AND USERNAME STORED DATA OF THE USER
+        # TO DISPLAY IT ON THE COMBOBOXES
+        self.saved_websites = []
+        self.saved_mails =  []
+        # WE UPDATE THE COMBOBOX VALUES WITH THE FUNCTION BELOW
+        self.website_entry = ttk.Combobox(
+            self.window,
+            postcommand=self.update_combobox
+            )
+        self.mail_entry = ttk.Combobox(
+            self.window,
+            postcommand=self.update_combobox
+         )
         self.website_title_label.grid(row=3,column=1)
         self.mail_title_label.grid(row=4,column=1)
         self.website_entry.grid(row=3,column=2)
         self.mail_entry.grid(row=4,column=2)
         #GENERATE BUTTON
         self.generate_password_btn = Button(self.window,text="Generate Password",command=self.genPassword)
-        self.generate_password_btn.grid(row=5,column=3,padx=10,pady=10)
+        self.generate_password_btn.grid(row=6, column=3,padx=10,pady=10)
         # ENTER PASSWORD LABEL AND BUTTON
         self.enter_password_btn = Button(self.window,text="Save Password",command=self.savePassword)
         self.enter_password_entry = Entry(self.window)
@@ -45,9 +57,10 @@ class UI:
         self.enter_password_lbl.grid(row=5,column=1,padx=10,pady=10)
         #SEARCH PASSWORD BUTTON 
         self.search_password_btn = Button(self.window,text="Search Password",command=self.searchPassword)
-        self.search_password_btn.grid(row=6, column=3)
-
-        #Setup password gen
+        self.search_password_btn.grid(row=7,column=2)
+        # DISPLAY ALL SAVED PASSWORDS 
+        self.display_all_passwords_btn = Button(self.window,text="Display all passwords")
+        self.display_all_passwords_btn.grid(row=5,column=3)
         self.pwo = PasswordGenerator()
         self.pwo.minlen = 12
         self.pwo.maxlen = 16
@@ -101,25 +114,39 @@ class UI:
         username = self.getUsername()
         password = self.getPassword()
         website = self.getWebsite()
-
+        # WE SAVE THE DATA INTO A DICTIONARY IN ORDER TO WORK WITH IT 
+        data_to_save = {}
+        data_to_save ["username"] = username
+        data_to_save ["password"] = password
+        data_to_save ["website"] = website
         #ENCRYPTION
         password = self.cipher(password)
         
         if (username == "" or website == "" or password == ""):
-            messagebox.showinfo(title="PASSWORD MANAGER", message="MISSING VALUES!")
-       
+            messagebox.showinfo(title="PASSWORD MANAGER", message="MISSING VALUES!")  
+            return 
         else:
-            dictionary = {}
-            dictionary["username"] = username
-            dictionary["password"] = password
-            dictionary["website"] = website
+            """
+            CHECK IF THE CREDENTIALS ARE ALREADY ON THE DATA BASE
+            """
+            for dict in data:
+                if (data_to_save["username"] == dict["username"] and data_to_save["website"] == dict["website"]):
+                    messagebox.showinfo(title="PASSWORD MANAGER", message="This credentials are already saved!")
+                    return 
+            """
+            IF NOT WE PROCEED TO SAVE 
+            """
             save = messagebox.askquestion(title="Save password?",message=f"Would you like to save this credentials? \n Username:{username} \n Website:{website} \n Password: {self.decipher(password)}")
             if (save == 'yes'):
-                data.append(dictionary)
+                data_to_save["password"] = self.cipher(data_to_save["password"])
+                data.append(data_to_save)
                 json_object = json.dumps(data,indent=3)
                 with open("users\default user\default_passwords.json",'w') as outfile:
                     outfile.write(json_object)
                 messagebox.showinfo(title="PASSWORD MANAGER", message="PASSWORD SAVED!\n username:{} \n website:{} \n password:{}".format(username,website,self.decipher(password)))
+                # WE UPDATE THE COMBOBOX VALUES WITH THE FUNCTION BELOW
+                self.update_combobox()
+                return 
             elif (save == 'no'):
                 pass
         
@@ -196,3 +223,18 @@ class UI:
     def decipher(self,encMessage: str):
         decMessage = self.encryptor.decrypt(encMessage).decode()
         return decMessage
+    
+    """
+    THIS FUNCTION IS TO UPDATE THE COMBOBOXES OPTIONS 
+    
+    """
+    def update_combobox(self):
+        data = self.collectData()
+        for dict in data: 
+            if (dict["website"] not in self.saved_websites):
+                self.saved_websites.append(dict["website"])
+            if (dict["username"] not in self.saved_mails):
+                self.saved_mails.append(dict["username"])
+        self.website_entry['values'] = self.saved_websites
+        self.mail_entry['values'] = self.saved_mails
+        return
