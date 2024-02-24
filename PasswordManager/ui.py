@@ -15,6 +15,7 @@ class UI:
     def __init__(self,encryptor:Fernet):
         #INITIALIZE THE WINDOW
         self.window = Tk()
+        self.window.wait_visibility()
         self.encryptor = encryptor
         #CONFIG TITLE AND SIZE
         self.window.title("Password Manager")
@@ -59,7 +60,7 @@ class UI:
         self.search_password_btn = Button(self.window,text="Search Password",command=self.searchPassword)
         self.search_password_btn.grid(row=7,column=2)
         # DISPLAY ALL SAVED PASSWORDS 
-        self.display_all_passwords_btn = Button(self.window,text="Display all passwords")
+        self.display_all_passwords_btn = Button(self.window,text="Display all passwords",command=self.display_all_passwords_window)
         self.display_all_passwords_btn.grid(row=5,column=3)
         self.pwo = PasswordGenerator()
         self.pwo.minlen = 12
@@ -113,19 +114,21 @@ class UI:
         data = self.collectData()
         username = self.getUsername()
         password = self.getPassword()
+        
         website = self.getWebsite()
         # WE SAVE THE DATA INTO A DICTIONARY IN ORDER TO WORK WITH IT 
         data_to_save = {}
         data_to_save ["username"] = username
         data_to_save ["password"] = password
         data_to_save ["website"] = website
-        #ENCRYPTION
-        password = self.cipher(password)
         
         if (username == "" or website == "" or password == ""):
             messagebox.showinfo(title="PASSWORD MANAGER", message="MISSING VALUES!")  
             return 
         else:
+            #ENCRYPTION
+            #CIPHER THE PASSWORD WE ARE GOING TO SAVE
+            password = self.cipher(password)
             """
             CHECK IF THE CREDENTIALS ARE ALREADY ON THE DATA BASE
             """
@@ -240,7 +243,9 @@ class UI:
         self.website_entry['values'] = self.saved_websites
         self.mail_entry['values'] = self.saved_mails
         return
-    
+    """
+    QUICK SORT FUNCTION TO SORT THE LIST OF THE COMBOBOXES 
+    """
     def quicksort(self,values):
         if len(values) <= 1:
             return values
@@ -254,3 +259,59 @@ class UI:
                 greater_than_pivot.append(value)
 
         return self.quicksort(less_than_pivot) + [pivot] + self.quicksort(greater_than_pivot)
+
+    """
+    WINDOW TO DISPLAY ALL PASSWORDS
+    """
+    def display_all_passwords_window(self):
+     
+        # Toplevel object which will 
+        # be treated as a new window
+        self.newWindow = Toplevel(self.window)
+        
+        # sets the title of the
+        # Toplevel widget
+        self.newWindow.title("Passord manager")
+    
+        # sets the geometry of toplevel
+       # self.newWindow.geometry("600x600")
+    
+        # WE MAKE IT THE TOP MOST WINDOW AND CENTER IT
+        self.newWindow.attributes("-topmost",True)
+        x = self.window.winfo_x() + self.window.winfo_width()//2 - self.newWindow.winfo_width()//2
+        y = self.window.winfo_y() + self.window.winfo_height()//2 - self.newWindow.winfo_height()//2
+        self.newWindow.geometry(f"+{x}+{y}")
+        
+        
+        """
+        MAKE THE LIST OF USERNAMES WEBSITES AND PASSWORDS
+        """
+        data = self.collectData()
+        list_of_credetials = []
+        for dict in data:
+            credentials = dict["website"] + ", " + dict["username"] + ", " + self.decipher(dict["password"])
+            list_of_credetials.append(credentials)
+        list_of_credetials = self.quicksort(list_of_credetials)
+        
+        # COMPUTE THE LONGEST STRING IN OUR CREDENTIALS TO DISPLAY
+        characters_of_biggest_string = 0
+        for string in list_of_credetials:
+            if (len(string) > characters_of_biggest_string):
+                    characters_of_biggest_string = len(string)
+        # MAKE THE SCROLL BAR AND THE LIST BOX FOR THE PASSWORD LIST
+        scrollbar = Scrollbar(self.newWindow)
+        self.listbox = Listbox(self.newWindow,height=int(len(list_of_credetials)//1.5),width=characters_of_biggest_string)  
+        
+        # SCROLL BAR AND LISTBOX LINK
+        self.listbox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command = self.listbox.yview) 
+        # WE DUMP THE CREDENTIAL VALUES INTO THE LIST BOX
+        
+        for i in range(0,len(list_of_credetials)-1):
+            self.listbox.insert(i, list_of_credetials[i]) 
+            
+            
+        self.newWindow.wait_visibility() 
+        self.listbox.pack(side = LEFT, fill = BOTH)
+        scrollbar.pack(side=RIGHT,fill=BOTH)
+        
