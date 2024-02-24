@@ -235,6 +235,22 @@ class UI:
                 self.saved_websites.append(dict["website"])
             if (dict["username"] not in self.saved_mails):
                 self.saved_mails.append(dict["username"])
+        self.saved_websites = self.quicksort(self.saved_websites)
+        self.saved_mails = self.quicksort(self.saved_mails)
         self.website_entry['values'] = self.saved_websites
         self.mail_entry['values'] = self.saved_mails
         return
+    
+    def quicksort(self,values):
+        if len(values) <= 1:
+            return values
+        less_than_pivot = []
+        greater_than_pivot = []
+        pivot = values[0]
+        for value in values[1:]:
+            if value <= pivot:
+                less_than_pivot.append(value)
+            else:
+                greater_than_pivot.append(value)
+
+        return self.quicksort(less_than_pivot) + [pivot] + self.quicksort(greater_than_pivot)
