@@ -310,8 +310,33 @@ class UI:
         for i in range(0,len(list_of_credetials)-1):
             self.listbox.insert(i, list_of_credetials[i]) 
             
-            
+        
+
         self.newWindow.wait_visibility() 
         self.listbox.pack(side = LEFT, fill = BOTH)
         scrollbar.pack(side=RIGHT,fill=BOTH)
+        # WE BIND THE LIST BOX COPY FUNCTION TO THE LISTBOX 
+        self.listbox.bind('<Double-Button-1>', self.listbox_copy)
+
+    """
+    PASTE THE PASSWORD TO THE CLIPBOARD WHEN A USER SELECTS AN OPTION FROM THE LIST BOX
+
+    """
+
+    def listbox_copy(self,event):
+        all_items = self.listbox.get(0, END)
+        index_of_selected = self.listbox.curselection()[0]
+        item_to_copy = all_items[index_of_selected]
+        
+        """
+        COMPARE THE DATA OF THE LIST BOX TO THE DATABASE DATA
+        """
+        data = self.collectData()
+        for dict in data:
+            if (item_to_copy.find(self.decipher(dict["password"])) != -1):
+                item_to_copy = self.decipher(dict["password"])
+                break 
+        messagebox.showinfo(title="Password",message=f"Your password is: {item_to_copy} \n copied to clipboard!")  
+        pyperclip.copy(item_to_copy)
+       
         
