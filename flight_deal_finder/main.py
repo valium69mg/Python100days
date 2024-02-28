@@ -85,8 +85,7 @@ def is_flight_cheaper(flight_to_compare):
     res.raise_for_status()
     # IF THE IS NO FLIGHT REGISTERED WE SAVE IT 
     if (res.json()['hoja1'] == []):
-        save_flight_to_spreadsheet(flight_to_compare)
-        return False
+        return None
     else:
         # COMPARE FLIGHTS
         price = res.json()['hoja1'][0]["price"]
@@ -110,12 +109,23 @@ IF A FLIGHT IS ALREADY SAVED WE NEED TO UPDATE THE FLIGHT INFO
 AND WE DO IT WITH A PUT REQUEST
 """
         
-def update_flight(new_flight,id=find_flight_id()):
-    body = {
-        "hoja1":new_flight
-    }
-    res = requests.put(url=SHEET_URL+f"/{id}",json=body)
-    res.raise_for_status()
+def update_flight(new_flight,id=find_flight_id(),comparator=is_flight_cheaper):
+    is_flight_cheaper = comparator(new_flight)
+    # IF THERE ARE NO SAVED FLIGHTS
+    if (is_flight_cheaper == None):
+        save_flight_to_spreadsheet(new_flight)
+        print("No flights saved!")
+        print("Savings today cheapest flight...")
+    elif (is_flight_cheaper == True):
+        body = {
+            "hoja1":new_flight
+        }
+        res = requests.put(url=SHEET_URL+f"/{id}",json=body)
+        res.raise_for_status()
+        print("A cheaper flight was found!")
+        print("Saving cheapest flight...")
+    else:
+        print("No flights cheaper today.")
 
 """
 COMPUTE THE CHEAPEST FLIGHT OF TODAY
@@ -129,21 +139,4 @@ IF THE FLIGHT FOUND TODAY IS CHEAPER THAN THE SPREED SHEET FLIGHT
 IT ADDS IT TO THE SPREAD SHEET
 """
 
-test_flight = {
-    "hoja1":{
-        "from":"QRO",
-        "to":"CUN",
-        "flight":"69",
-        "price":"69",
-        "localDate":"Hello",
-        "arrivalDate":"World"
-    }
-}
-    
-
-if (is_flight_cheaper(flight_to_compare=flight_to_save) == True):
-    update_flight(new_flight=flight_to_save)
-    print("Flight info updated!")
-else:
-    print("There are no flights cheaper")
-
+update_flight(new_flight=flight_to_save)
